@@ -11,12 +11,14 @@ from PIL import Image
 from scipy.ndimage import gaussian_filter1d
 from tqdm import tqdm
 
+
 # from configs import paths_config
 def paste_image(inverse_transform, img, orig_image):
     pasted_image = orig_image.copy().convert('RGBA')
     projected = img.convert('RGBA').transform(orig_image.size, Image.PERSPECTIVE, inverse_transform, Image.BILINEAR)
     pasted_image.paste(projected, (0, 0), mask=projected)
     return pasted_image
+
 
 def get_landmark(filepath, predictor, detector=None, fa=None):
     """get landmark with dlib
@@ -114,10 +116,11 @@ def crop_image(filepath, output_size, quad, enable_padding=False):
         img = img.resize((output_size, output_size), PIL.Image.ANTIALIAS)
     return img
 
+
 def compute_transform(lm, predictor, detector=None, scale=1.0, fa=None):
     # lm = get_landmark(filepath, predictor, detector, fa)
     # if lm is None:
-        # raise Exception(f'Did not detect any faces in image: {filepath}')
+    # raise Exception(f'Did not detect any faces in image: {filepath}')
     lm_chin = lm[0: 17]  # left-right
     lm_eyebrow_left = lm[17: 22]  # left-right
     lm_eyebrow_right = lm[22: 27]  # left-right
@@ -151,7 +154,7 @@ def crop_faces(IMAGE_SIZE, files, scale, center_sigma=0.0, xy_sigma=0.0, use_fa=
     if use_fa:
         if fa == None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
-            fa = face_alignment.FaceAlignment(face_alignment.LandmarksType._2D, flip_input=True, device=device)
+            fa = face_alignment.FaceAlignment(face_alignment.LandmarksType.TWO_D, flip_input=True, device=device)
         predictor = None
         detector = None
     else:
@@ -192,7 +195,7 @@ def crop_faces_by_quads(IMAGE_SIZE, files, quads):
     crops = []
     for quad, (_, path) in tqdm(zip(quads, files), total=len(quads)):
         crop = crop_image(path, IMAGE_SIZE, quad.copy())
-        orig_image = path # Image.open(path)
+        orig_image = path  # Image.open(path)
         orig_images.append(orig_image)
         crops.append(crop)
     return crops, orig_images
